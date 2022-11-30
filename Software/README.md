@@ -8,11 +8,13 @@ For more information, bug Ryan and perhaps someday he'll write something more us
 
 ### Rainbow Pattern
 The array will be filled with a constant/fluid rainbow effect.  This can be called in a main loop as follows:
+
     rainbow_pattern();
 
 There are no input parameters required, and this will fill up the entire string defined by #define constants.
 
 The pattern will look like this when output to the light string:
+
 ![rainbow_pattern](supporting_images/gif/rainbow_pattern.gif)
 
 
