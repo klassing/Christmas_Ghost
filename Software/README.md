@@ -1,7 +1,10 @@
-# Software
+# Christmas Ghost SW
 
-This directory is used for storing the software development files, and the structure/content will depend on the IDE used.
-    
+## Description
+This project is meant to spread the holiday cheer with a bit of lighting.
+For more information, bug Ryan and perhaps someday he'll write something more useful here.
+
+## Author
 - Author: Ryan Klassing
 - Copyright (C) 2017-2022 Ryan Klassing.
 - Released under the MIT license.
