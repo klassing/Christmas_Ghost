@@ -4,8 +4,20 @@
 This project is meant to spread the holiday cheer with a bit of lighting.
 For more information, bug Ryan and perhaps someday he'll write something more useful here.
 
-## Author
-- Author: Ryan Klassing
+## Light Patterns
+
+### Rainbow Pattern
+The array will be filled with a constant/fluid rainbow effect.  This can be called in a main loop as follows:
+    rainbow_pattern();
+
+There are no input parameters required, and this will fill up the entire string defined by #define constants.
+
+The pattern will look like this when output to the light string:
+![rainbow_pattern](supporting_images/gif/rainbow_pattern.gif)
+
+
+## Author(s)
+- Author(s): Ryan Klassing
 - Copyright (C) 2017-2022 Ryan Klassing.
 - Released under the MIT license.
 
