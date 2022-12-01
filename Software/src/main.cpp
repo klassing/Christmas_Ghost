@@ -41,12 +41,12 @@
 
     /* LED Configurations */
     #define LED_TYPE WS2811
-    #define LED_COLOR_ORDER GRB
-    #define LED_QTY 10              //TODO --> update with total QTY once the external lights are added
+    #define LED_COLOR_ORDER RGB
+    #define LED_QTY 110             //TODO --> update with total QTY once the external lights are added
     #define LED_RIGHT_EYE_POS 0     //Right Eye LED position in the LED array
     #define LED_LEFT_EYE_POS 1      //Left Eye LED position in the LED array
     #define LED_PER_START_POS 2     //Starting array position for the peripheral LEDs
-    #define LED_MAX_BRIGHTNESS 96   //Maximum allowed brightness for the LEDs
+    #define LED_MAX_BRIGHTNESS 255   //Maximum allowed brightness for the LEDs
     #define LED_FPS 60              //# of times to push an update to the LED color/brightness per second
     #define LED_PER_FADE_AMT 20     //Fade-in / Fade-out will be done in this increment
     CRGB LED_ARR[LED_QTY];          //global LED array
@@ -161,23 +161,29 @@
     void time_logln(String message);            //Function to log debug messages during development, prepended with a timestamp, with CRLF
 
     /* Christmas Pattern Prototypes */
-    void rainbow_pattern();                                     //Function to fill the entire LED array with a rainbow pattern
-        uint8_t global_rainbow_hue = 0;                         //Global variable to track a revolving hue for the rainbow prototype
+    uint8_t blendU8(uint8_t fromU8, uint8_t toU8, uint8_t amount);      /* Function to blend beteween two unsignedINTs by a specified amount */
+    
+    CRGB fadeToColor(CRGB fromCRGB, CRGB toCRGB, uint8_t amount);       /* Function to fade from one color to a different color by a specified amount */
+
+    void rainbow_pattern();                                             //Function to fill the entire LED array with a rainbow pattern
+        uint8_t global_rainbow_hue = 0;                                 //Global variable to track a revolving hue for the rainbow prototype
 
     void static_light_pattern(CRGB light_strand[], uint16_t qty_of_lights, uint32_t light_pattern[], uint16_t qty_of_pattern, uint8_t starting_pattern_index = 0);        //Simple function to draw a pattern, defined by an incoming array to be repeated over the full string over and over
 
-    uint8_t candy_cane(uint8_t starting_index = 0);             /* Draw a simple red/white pattern to resemble a candy cane's stripes */
-                                                                /* Return the size of the pattern to a calling function, to allow upstream functions to cycle through if desired */
+    uint8_t candy_cane(uint8_t starting_index = 0);                     /* Draw a simple red/white pattern to resemble a candy cane's stripes */
+                                                                        /* Return the size of the pattern to a calling function, to allow upstream functions to cycle through if desired */
 
-    uint8_t christmas_spirit(uint8_t starting_index = 0);       /* Draw a simple red/green/white pattern to resemble a candy cane's stripes */
-                                                                /* Return the size of the pattern to a calling function, to allow upstream functions to cycle through if desired */
+    uint8_t christmas_spirit(uint8_t starting_index = 0);               /* Draw a simple red/green/white pattern to resemble a candy cane's stripes */
+                                                                        /* Return the size of the pattern to a calling function, to allow upstream functions to cycle through if desired */
 
-    void rotating_candy_cane();                                 /* Rotates through the colors of the candy cane LED by LED */
-    void rotating_christmas_spirit();                           /* Rotates through the colors of the christmas spirit LED by LED */
-        uint8_t global_rotating_light_idx = 0;                  //Global variable to track a rotating index for any of the rotating light patterns
+    void rotating_candy_cane();                                         /* Rotates through the colors of the candy cane LED by LED */
+    void rotating_christmas_spirit();                                   /* Rotates through the colors of the christmas spirit LED by LED */
+        uint8_t global_rotating_light_idx = 0;                          //Global variable to track a rotating index for any of the rotating light patterns
 
-    void juggle_candy_cane();                                   //Bouncing lights from end-to-end, with the colors of a candy cane
-    void juggle_christmas_spirit();                             //Bouncing lights from end-to-end, with the colors of a candy cane
+    void juggle_candy_cane();                                           //Bouncing lights from end-to-end, with the colors of a candy cane
+    void juggle_christmas_spirit();                                     //Bouncing lights from end-to-end, with the colors of a candy cane
+
+    void fade_candy_cane();                                             /* Red/white pattern that fades between the two colors */
 
 /* -------------- [END] Define Function Prototypes -------------- */
 
@@ -187,7 +193,7 @@
     typedef void (*FunctionList[])();
 
     /* Update this array whenever new functions need to be added, and the led_handler will automatically loop through them */
-    FunctionList christmas_patterns = {rainbow_pattern, juggle_candy_cane, juggle_christmas_spirit, rotating_candy_cane, rotating_christmas_spirit};
+    FunctionList christmas_patterns = {fade_candy_cane/*rainbow_pattern, juggle_candy_cane, juggle_christmas_spirit, rotating_candy_cane, rotating_christmas_spirit*/};
 
     /* function list index to loop through the patterns */
     uint8_t christmas_patterns_idx = 0;
@@ -759,4 +765,45 @@ void juggle_christmas_spirit() {
   /* Third light = Green */
   LED_ARR[beatsin16( 21, LED_PER_START_POS, LED_QTY - 1 )] |= CHSV(80, 255, 255);
 
+}
+
+/* Red/white pattern that fades between the two colors */
+void fade_candy_cane() {
+    CRGB start_color = CRGB::Red;
+    CRGB end_color = CRGB::White;
+
+    CRGB current_color = start_color;
+
+    fill_solid(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, current_color);
+    FastLED.show();
+
+    uint8_t fade_amount = 1;
+
+    for (uint8_t i=0; i<100; i++) {
+        current_color = fadeToColor(current_color, end_color, fade_amount);
+        fill_solid(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, current_color);
+        FastLED.show();
+        delay(10);
+    }
+}
+
+/* Function to blend beteween two unsignedINTs by a specified amount */
+uint8_t blendU8(uint8_t fromU8, uint8_t toU8, uint8_t amount) {
+    /* don't do anything if they're already equivalent */
+    if (fromU8 == toU8) {return fromU8;}
+
+    /* Calculate how far apart the uint8_t values are, and scale it by the 'amount' passed to blend by */
+    uint8_t dU8 = scale8_video(abs(toU8 - fromU8), amount);
+
+    /* Increment or Decrement the fromU8 by the scaled delta */
+    return (fromU8 > toU8) ? fromU8 - dU8 : fromU8 + dU8;
+}
+
+/* Function to fade from one color to a different color by a specified amount */
+CRGB fadeToColor(CRGB fromCRGB, CRGB toCRGB, uint8_t amount) {
+    return CRGB(
+        blendU8(fromCRGB.r, toCRGB.r, amount),
+        blendU8(fromCRGB.g, toCRGB.g, amount),
+        blendU8(fromCRGB.b, toCRGB.b, amount)
+    );
 }
