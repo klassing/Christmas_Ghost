@@ -168,7 +168,7 @@
     void rainbow_pattern();                                             //Function to fill the entire LED array with a rainbow pattern
         uint8_t global_rainbow_hue = 0;                                 //Global variable to track a revolving hue for the rainbow prototype
 
-    void static_light_pattern(CRGB light_strand[], uint16_t qty_of_lights, uint32_t light_pattern[], uint16_t qty_of_pattern, uint8_t starting_pattern_index = 0);        //Simple function to draw a pattern, defined by an incoming array to be repeated over the full string over and over
+    void fill_light_pattern(CRGB light_strand[], uint16_t qty_of_lights, uint32_t light_pattern[], uint16_t qty_of_pattern, uint8_t starting_pattern_index = 0, uint8_t blend_amount = 0);        //Simple function to draw a pattern, defined by an incoming array to be repeated over the full string over and over
 
     uint8_t candy_cane(uint8_t starting_index = 0);                     /* Draw a simple red/white pattern to resemble a candy cane's stripes */
                                                                         /* Return the size of the pattern to a calling function, to allow upstream functions to cycle through if desired */
@@ -681,7 +681,8 @@ void rainbow_pattern() {
 
 /* Simple function to draw a pattern, defined by an incoming array to be repeated over the full string */
     /* Note - starting_pattern_index can be incremented to simmulate a "walking pattern" if desired, but needs to be incremented outside of this function */
-void static_light_pattern(CRGB light_strand[], uint16_t qty_of_lights, uint32_t light_pattern[], uint16_t qty_of_pattern, uint8_t starting_pattern_index/*=0*/) {
+    /* Note - if "blend_amount" is provided, each light will blend towards the next index of the pattern by 'blend_amount' (set to 0 for no blending to occur) */
+void fill_light_pattern(CRGB light_strand[], uint16_t qty_of_lights, uint32_t light_pattern[], uint16_t qty_of_pattern, uint8_t starting_pattern_index/*=0*/, uint8_t blend_amount/*=0*/) {
 
   /* Do a quick check to make sure we weren't passed a starting index > pattern array.  If so - just start at the end of the pattern array */
   uint16_t pattern_index = (starting_pattern_index < qty_of_pattern) ? starting_pattern_index : qty_of_pattern - 1;
@@ -706,7 +707,7 @@ uint8_t candy_cane(uint8_t starting_index/*=0*/) {
   uint8_t pattern_index = starting_index;
 
   /* draw the pattern - skipping over the "eye" positions */
-  static_light_pattern(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, light_pattern, qty_of_pattern, pattern_index);
+  fill_light_pattern(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, light_pattern, qty_of_pattern, pattern_index);
 
   return qty_of_pattern;
 }
@@ -720,7 +721,7 @@ uint8_t christmas_spirit(uint8_t starting_index/*=0*/) {
   uint8_t pattern_index = starting_index;
 
   /* draw the pattern - skipping over the "eye" positions */
-  static_light_pattern(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, light_pattern, qty_of_pattern, pattern_index);
+  fill_light_pattern(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, light_pattern, qty_of_pattern, pattern_index);
 
   return qty_of_pattern;
 }
@@ -767,26 +768,6 @@ void juggle_christmas_spirit() {
 
 }
 
-/* Red/white pattern that fades between the two colors */
-void fade_candy_cane() {
-    CRGB start_color = CRGB::Red;
-    CRGB end_color = CRGB::White;
-
-    CRGB current_color = start_color;
-
-    fill_solid(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, current_color);
-    FastLED.show();
-
-    uint8_t fade_amount = 1;
-
-    for (uint8_t i=0; i<100; i++) {
-        current_color = fadeToColor(current_color, end_color, fade_amount);
-        fill_solid(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, current_color);
-        FastLED.show();
-        delay(10);
-    }
-}
-
 /* Function to blend beteween two unsignedINTs by a specified amount */
 uint8_t blendU8(uint8_t fromU8, uint8_t toU8, uint8_t amount) {
     /* don't do anything if they're already equivalent */
@@ -806,4 +787,30 @@ CRGB fadeToColor(CRGB fromCRGB, CRGB toCRGB, uint8_t amount) {
         blendU8(fromCRGB.g, toCRGB.g, amount),
         blendU8(fromCRGB.b, toCRGB.b, amount)
     );
+}
+
+/* Red/white pattern that fades between the two colors */
+void fade_candy_cane(uint8_t starting_index/*=0*/) {
+    /* set entire strip to RedRedWhiteWhite pattern */
+    uint32_t light_pattern[] = {CRGB::Red, CRGB::Red, CRGB::White, CRGB::White};
+    uint8_t qty_of_pattern = ARRAY_SIZE(light_pattern);
+    uint8_t pattern_index = starting_index;
+
+
+    CRGB start_color = CRGB::Red;
+    CRGB end_color = CRGB::White;
+
+    CRGB current_color = start_color;
+
+    fill_solid(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, current_color);
+    FastLED.show();
+
+    uint8_t fade_amount = 1;
+
+    for (uint8_t i=0; i<100; i++) {
+        current_color = fadeToColor(current_color, end_color, fade_amount);
+        fill_solid(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, current_color);
+        FastLED.show();
+        delay(10);
+    }
 }
