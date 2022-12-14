@@ -41,8 +41,8 @@
 
     /* LED Configurations */
     #define LED_TYPE WS2811
-    #define LED_COLOR_ORDER GRB
-    #define LED_QTY 10             //TODO --> update with total QTY once the external lights are added
+    #define LED_COLOR_ORDER RGB
+    #define LED_QTY 200             //TODO --> update with total QTY once the external lights are added
     #define LED_RIGHT_EYE_POS 0     //Right Eye LED position in the LED array
     #define LED_LEFT_EYE_POS 1      //Left Eye LED position in the LED array
     #define LED_PER_START_POS 2     //Starting array position for the peripheral LEDs
@@ -200,7 +200,7 @@
     uint8_t christmas_patterns_idx = 0;
 
     /* update this to set the duration (in seconds) of each pattern (how long it will run before moving to the next pattern) */
-    #define PATTERN_DURATION 10
+    #define PATTERN_DURATION 60
 
     /* Macro to calculate array sizes */
     #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
@@ -446,6 +446,13 @@ void button_left_long_click(Button2& btn) {
 /* Callback function to be executed when right is clicked */
 void button_right_click(Button2& btn) {
     logln("Right Hand - Click: Entering Deep Sleep..");
+
+    for (uint8_t i = 0; i < 255; i++) {
+        fadeToBlackBy(LED_ARR, LED_QTY, 1);
+        /* push LED data */
+        FastLED.show();
+        delay(2);
+    }
 
     enter_deep_sleep_IO_wake();
 }
@@ -705,7 +712,7 @@ void fill_light_pattern(CRGB light_strand[], uint16_t qty_of_lights, uint32_t li
 /* Return the size of the pattern to a calling function, to allow upstream functions to cycle through if desired */
 uint8_t candy_cane(uint8_t starting_index/*=0*/, uint8_t fade_amount/*=0*/) {
   /* set entire strip to RedRedWhiteWhite pattern */
-  uint32_t light_pattern[] = {CRGB::Red, CRGB::Red, CRGB::White, CRGB::White};
+  uint32_t light_pattern[] = {CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red, CRGB::White, CRGB::White, CRGB::White, CRGB::White, CRGB::White, CRGB::White};
   uint8_t qty_of_pattern = ARRAY_SIZE(light_pattern);
   uint8_t pattern_index = starting_index;
 
