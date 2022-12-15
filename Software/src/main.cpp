@@ -1,7 +1,8 @@
+
 /* 
     Author: Ryan Klassing 
     Date: 11/29/22
-    Version: */ #define SW_Version "v0.0.1" /*
+    Version: */ #define BLYNK_FIRMWARE_VERSION "0.0.2" /*
     Description:
         This is intended to run a small ESP32 based PCB that looks
         like a ghost, for simple/fun Christmas decotrations.  The
@@ -16,15 +17,23 @@
     License: see "LICENSE" file
 */
 
+/* ------------ [START] Early definitions for Blynk -------------- */
+    #define BLYNK_TEMPLATE_ID "TMPLmXb3Shr8"
+    #define BLYNK_DEVICE_NAME "ChristmasGhost"
+    #define BLYNK_PRINT Serial
+/* ------------   [End] Early definitions for Blynk -------------- */
+
+
 /* ------------ [START] Include necessary libraries -------------- */
-    #include <FastLED.h>        // Tested with v3.5.0 - https://github.com/FastLED/FastLED/releases/tag/3.5.0
-    #include <WiFi.h>           // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/espressif/arduino-esp32/releases/tag/2.0.5
-    #include <esp_bt.h>         // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/espressif/arduino-esp32/releases/tag/2.0.5
-    #include <WiFiAP.h>         // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/espressif/arduino-esp32/releases/tag/2.0.5
-    #include <WebServer.h>      // Included in ESP32 ARduino Core - Tested with v2.0.5 - https://github.com/espressif/arduino-esp32/releases/tag/2.0.5
-    #include <EEPROM.h>         // Included in ESP32 ARduino Core - Tested with v2.0.5 - https://github.com/espressif/arduino-esp32/releases/tag/2.0.5
-    #include <ESP2SOTA.h>       // Tested with v1.0.2 - https://github.com/pangodream/ESP2SOTA/releases/tag/1.0.2
-    #include <Button2.h>        // Tested with v2.0.3 - https://github.com/LennartHennigs/Button2/releases/tag/2.0.3
+    #include <FastLED.h>        // Tested with v3.5.0 - https://github.com/FastLED/FastLED.git#3.5.0
+    #include <WiFi.h>           // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
+    #include <esp_bt.h>         // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
+    #include <WiFiAP.h>         // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
+    #include <WebServer.h>      // Included in ESP32 ARduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
+    #include <EEPROM.h>         // Included in ESP32 ARduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
+    #include <ESP2SOTA.h>       // Tested with v1.0.2 - https://github.com/pangodream/ESP2SOTA.git#1.0.2
+    #include <Button2.h>        // Tested with v2.0.3 - https://github.com/LennartHennigs/Button2.git#2.0.3
+    #include <BlynkEdgent.h>    // Tested with v1.1.0 - https://github.com/blynkkk/blynk-library.git#1.1.0
 /* -------------- [END] Include necessary libraries -------------- */
 
 /* ------------ [START] HW Configuration Setup -------------- */
@@ -80,19 +89,6 @@
     Button2 right_hand_btn;         //Button for pressing the ghost's right hand
 /* ------------ [End] Button Configuration -------------- */
 
-/* -------- [START] WiFi AP Configuration -------------- */
-    const char* ota_ap_ssid = "GhostofChristmasPast";
-    const char* ota_ap_password = "password";
-    WebServer server(80);
-    uint8_t check_for_ota_update = false;       //Boolean flag to allow handler to determine when to check for OTA updates
-    uint32_t ota_handler_timer_start = 0;       //Time when the timer was started
-    uint32_t ota_handler_timer_duration = 0;    //Duration (in ms) for the timer
-    uint8_t ota_handler_index = 0;              //Index for which function the ota handler should call
-    #define QTY_OF_OTA_HANDLER_FUNC 3           //Max # of functions called by the ota handler
-    #define OTA_HANDLER_TIMEOUT 300000          //Timeout (in ms) for how long to keep the WiFi AP alive while checking for OTA update
-    uint32_t ota_start_time = 0;                //Keep track of when OTA was started
-/* ---------- [END] WiFi AP Configuration -------------- */
-
 /* ------ [START] EEPROM Configuration -------------- */
     #define EEPROM_SIZE 3                       //# bytes to use in flash for EEPROM emulation
     #define EEPROM_BLANK 0xff                   // used to check for unwritted/blank bytes (initial boot)
@@ -115,7 +111,6 @@
 
     /* Power Management Prototypes */
     void power_state_handler();                                     //Handler function to execute various power state management tasks
-    void enter_LPM();                                               //Function to enter Low Power Mode (for background task handling)
     void enter_FULL_RUN();                                          //Function to enter FULL RUN Mode (for foreground task handling)
     void disableWiFi();                                             //Function to disable WiFi for power savings
     void disableBT();                                               //Function to disable BT for power savings
@@ -129,21 +124,10 @@
 
     /* Input Button Management Prototypes */
     void button_handler();                      //Handler function to execute various input button management tasks
-    void button_init();                         //Function to initialize the button configurations
+    void init_buttons();                         //Function to initialize the button configurations
     void button_left_pressed(Button2& btn);     //Callback function to be executed when left is pressed/held
     void button_left_long_click(Button2& btn);  //Callback function to be executed when left is long clicked
     void button_right_click(Button2& btn);      //Callback function to be executed when right is clicked
-    void button_right_long_click(Button2& btn); //Callback function to be executed when right is long clicked
-
-    /* OTA Prototypes */
-    void ota_handler();                                                 //Handler function to execute various OTA management tasks
-    void ota_handler_next_function(uint32_t delay_before_next = 0);     //Function to cycle to the next handler function index, with a "delay" (non-blocking) before executing the next function
-    void ota_handler_start_timer();                                     //Function to start a timer for the ota handler
-    uint8_t ota_handler_check_timer();                                  //Function to check if the "delay" (non-blocking) timer has expired
-    void ota_handler_stop_timer();                                      //Function to clear the existing timer (if any)
-    void ota_enable_ap();                                               //Function to enable WiFi AP for supporting OTA updates
-    void ota_start_server();                                            //Function to start the web server to be used for OTA updates
-    void ota_check_for_update();                                        //Function to check for OTA updates in the background
 
     /* EEPROM Prototypes */
     CRGB EEPROM_check_last_eye_color();         //Function to read the eye color (RGB) stored in EEPROM
@@ -194,7 +178,7 @@
     typedef void (*FunctionList[])();
 
     /* Update this array whenever new functions need to be added, and the led_handler will automatically loop through them */
-    FunctionList christmas_patterns = {fading_candy_cane, fading_christmas_spirit/*rainbow_pattern, juggle_candy_cane, juggle_christmas_spirit, rotating_candy_cane, rotating_christmas_spirit*/};
+    FunctionList christmas_patterns = {fading_candy_cane, fading_christmas_spirit, rainbow_pattern/*, juggle_candy_cane, juggle_christmas_spirit, rotating_candy_cane, rotating_christmas_spirit*/};
 
     /* function list index to loop through the patterns */
     uint8_t christmas_patterns_idx = 0;
@@ -214,12 +198,12 @@ void setup() {
     /* Initialize the EEPROM for later access */
     EEPROM.begin(EEPROM_SIZE);
 
-    /* Enter LPM ASAP for power savings */
-    enter_LPM();
+    /* Set WiFi to automatic sleep to reduce power */
+    WiFi.setSleep(true);
 
     /* Initialize the HW pins / buttons */
     pin_config();
-    button_init();
+    init_buttons();
 
     /* Initialize the Ghost Eye color */
     set_initial_eye_color();
@@ -234,6 +218,9 @@ void setup() {
     FastLED.addLeds<LED_TYPE, LED_DATA_PIN, LED_COLOR_ORDER>(LED_ARR, LED_QTY).setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(LED_MAX_BRIGHTNESS);
 
+    /* Initiate Blynk Edgent */
+    BlynkEdgent.begin();
+
 }
 
 void loop() {
@@ -243,11 +230,14 @@ void loop() {
     /* Handle input tasks */
     button_handler();
 
-    /* Handle any OTA tasks */
-    ota_handler();
-
     /* Handle the power states */
     power_state_handler();
+
+    /* Handle BlynkEdgent */
+    BlynkEdgent.run();
+
+    /* Delay a small amount to pet the watchdog */
+    delayMicroseconds(1);
 }
 
 /* Function to initialize HW config */
@@ -268,7 +258,7 @@ void pin_config() {
 void print_welcome_message() {
     time_println("***************************");
     time_println("***** Christmas Ghost *****");
-    time_print("*****    SW: "); print(SW_Version); println("   *****");
+    time_print("*****    SW: v"); print(BLYNK_FIRMWARE_VERSION); println("   *****");
     time_println("***************************");
 }
 
@@ -290,19 +280,6 @@ void check_wakeup_reason() {
 /* Handler function to execute various power state management tasks */
 void power_state_handler() {    
     // Not used for this project
-}
-
-/* Function to enter Low Power Mode (for background task handling) */
-void enter_LPM() {
-    if (!check_for_ota_update) {
-        time_logln("[Power State]: Entering LPM..");
-
-        /* Disable BT / WiFi */
-        time_logln("..Disabling WiFi");
-        disableWiFi();
-        time_logln("..Disabling BT");
-        disableBT();
-    }
 }
 
 /* Function to enter FULL RUN Mode (for foreground task handling) */
@@ -341,16 +318,6 @@ void enter_deep_sleep_IO_wake() {
     esp_deep_sleep_start();
 }
 
-/* Function to enter Light Sleep but wake-up after wake_timer us */
-void enter_light_sleep_TIMER_wake(uint64_t wake_timer) {
-    if (!check_for_ota_update) {
-        /* Set a wake-up timer */
-        esp_sleep_enable_timer_wakeup(wake_timer);
-
-        /* Go to sleep */
-        esp_light_sleep_start();
-    }
-}
 
 /* Handler function to execute various LED management tasks */
 void led_handler() {
@@ -379,7 +346,7 @@ void set_initial_eye_color() {
 /* Function to calculate the Ghost's eye brightness */
 void calculate_eye_fade() {
     /* Calculate the brightness value, based on exponential effect over time */
-    float deltaVAL = ((exp(sin((check_for_ota_update ? LED_EYE_BREATH_OTA_SPEED : LED_EYE_BREATH_RUN_SPEED) * millis()/2000.0*PI)) -0.36787944) * LED_EYE_BREATH_DELTA);
+    float deltaVAL = ((exp(sin((LED_EYE_BREATH_RUN_SPEED) * millis()/2000.0*PI)) -0.36787944) * LED_EYE_BREATH_DELTA);
 
     /* Adjust the HSV value to perform dimming */
     if (led_user_setting) {LED_EYE_COLOR.v = LED_EYE_BREATH_SET_VAL;} 
@@ -408,7 +375,7 @@ void button_handler() {
 }
 
 /* Function to initialize the button configurations */
-void button_init() {
+void init_buttons() {
     /* Configure Left Hand */
     left_hand_btn.begin(LEFT_TOUCH_PIN, INPUT, false, false);       //(pin, mode, isCapacitive, activeLow)
     //left_hand_btn.setPressedHandler(button_left_pressed);
@@ -420,19 +387,15 @@ void button_init() {
     right_hand_btn.setDebounceTime(1000);
     right_hand_btn.setClickHandler(button_right_click);
     right_hand_btn.setLongClickTime(5000);
-    right_hand_btn.setLongClickHandler(button_right_long_click);
-    right_hand_btn.setLongClickDetectedHandler(button_right_long_click);
 }
 
 /* Callback function to be executed when left is clicked */
 void button_left_pressed(Button2& btn) {
-    if (!check_for_ota_update) {
-        EVERY_N_MILLISECONDS (25) {
-            logln("Left Hand - Pressed: Incrementing Eye Hue -> " + String(LED_EYE_COLOR.h));
+    EVERY_N_MILLISECONDS (25) {
+        logln("Left Hand - Pressed: Incrementing Eye Hue -> " + String(LED_EYE_COLOR.h));
 
-            /* Increment the hue */
-            LED_EYE_COLOR.h++;
-        }
+        /* Increment the hue */
+        LED_EYE_COLOR.h++;
     }
 }
 
@@ -455,155 +418,6 @@ void button_right_click(Button2& btn) {
     }
 
     enter_deep_sleep_IO_wake();
-}
-
-/* Callback function to be executed when right is long clicked */
-void button_right_long_click(Button2& btn) {
-    logln("Right Hand - Long Click: Starting OTA Scan..");
-
-    check_for_ota_update = true;
-}
-
-/* Handler function to execute various OTA management tasks */
-void ota_handler() {
-    if(check_for_ota_update) {
-        /* If the ota_handler_timer has expired, call the next function in the index list */
-            /* Note: ota_handler_index will be incremented in each function as needed */
-        if (ota_handler_check_timer()) {
-            switch(ota_handler_index) {
-                case 0:
-                    ota_enable_ap();
-                    break;
-                case 1:
-                    ota_start_server();
-                    break;
-                case 2:
-                    ota_check_for_update();
-                    break;
-                default:
-                    /* If made it here, ota_handler_max_index was defined too large for how many functions are being used - increment again to loop through eventually */
-                    ota_handler_next_function();
-                    break;
-            }
-        }
-    } else {
-        /* Reset the ota handler index back to 0, to start from the begining when starting an OTA check */
-        ota_handler_index = 0;
-
-        /* Reset the OTA timer for the next use */
-        ota_start_time = millis();
-    }
-}
-
-/* Function to cycle to the next handler function index, with a "delay" (non-blocking) before executing the next function */
-void ota_handler_next_function(uint32_t delay_before_next/*=0*/) {
-    /* Increment the index, rolling over to the start if needed */
-    ota_handler_index = (ota_handler_index + 1) % QTY_OF_OTA_HANDLER_FUNC;
-
-    /* Set the delay timer if needed */
-    if (delay_before_next) {
-        /* Set the expiration time */
-        ota_handler_timer_duration = delay_before_next;
-
-        /* Start the timer */
-        ota_handler_start_timer();
-    } else {
-        /* Ensure no timer/delay is active */
-        ota_handler_stop_timer();
-    }
-}
-
-/* Function to start a timer for the ota handler */
-void ota_handler_start_timer() {
-    /* Keep track of the start time */
-    ota_handler_timer_start = millis();
-}
-
-/* Function to check if the "delay" (non-blocking) timer has expired */
-uint8_t ota_handler_check_timer() {
-    if ((millis() - ota_handler_timer_start) > ota_handler_timer_duration) {
-        /* stop the timer, it has expired */
-        ota_handler_stop_timer();
-
-        return true;
-    }
-
-    /* Timer didn't yet expire */
-    return false;
-}
-
-/* Function to clear the existing timer (if any) */
-void ota_handler_stop_timer() {
-    /* clear the timer start and duration */
-    ota_handler_timer_start = 0;
-    ota_handler_timer_duration = 0;
-}
-
-/* Function to enable WiFi AP for supporting OTA updates */
-void ota_enable_ap() {
-    /* Start the ota timer */
-    ota_start_time = millis();
-
-    /* Set power state to Full Run */
-    enter_FULL_RUN();
-
-    time_println("Enabling WiFi AP to check for OTA updates..");
-    time_print("..Connect to SSID: "); println(ota_ap_ssid);
-    time_print("..       Password: "); println(ota_ap_password);
-    time_print("OTA mode will be held for " + String(OTA_HANDLER_TIMEOUT/1000, DEC) + " seconds before going back to sleep.");
-
-    /* Enable Wifi radio and start the access point */
-    WiFi.disconnect(false);
-    WiFi.mode(WIFI_AP);
-    WiFi.softAP(ota_ap_ssid, ota_ap_password);
-
-    /* Enable automatic modem sleep */
-    WiFi.setSleep(true);
-
-    /* Show the user that OTA is active, but store the current color to be returned to after a reboot */
-    EEPROM_save_eye_color(LED_EYE_COLOR);
-    LED_EYE_COLOR = rgb2hsv_approximate(LED_OTA_EYE_COLOR);
-
-    /* Increment to the next function index after 1000ms */
-    ota_handler_next_function(1000);
-}
-
-/* Function to start the web server to be used for OTA updates */
-void ota_start_server() {
-    /* Set the IP Address */
-    IPAddress IP = IPAddress(10, 10, 10, 1);
-    IPAddress NMask = IPAddress(255, 255, 255, 0);
-    WiFi.softAPConfig(IP, IP, NMask);
-
-    /* Confirm and print the IP Address to the terminal */
-    IPAddress myIP = WiFi.softAPIP();
-    time_print(".. AP IP Address: "); println(String(myIP));
-
-    /* Configure the server */
-    server.on("/myurl", HTTP_GET, []() {
-        server.sendHeader("Connection", "close");
-        server.send(200, "text/plain", "Hello there!");
-    });
-
-    /* Initialize the server & OTA library */
-    ESP2SOTA.begin(&server);
-    server.begin();
-
-    /* Increment to the next function index without any delay */
-    ota_handler_next_function();
-}
-
-/* Function to check for OTA updates in the background */
-void ota_check_for_update() {
-    /* Go to Deep Sleep if the OTA timeout has been reached, to prevent wasting power */
-    if (millis() - ota_start_time > OTA_HANDLER_TIMEOUT) {
-        time_println("OTA Timeout occured, going to deep sleep for power savings..");
-
-        enter_deep_sleep_IO_wake();
-    }
-
-    /* Check for any updates */
-    server.handleClient();
 }
 
 /* Function to read the eye color (RGB) stored in EEPROM */
