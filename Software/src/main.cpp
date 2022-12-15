@@ -2,7 +2,7 @@
 /* 
     Author: Ryan Klassing 
     Date: 11/29/22
-    Version: */ #define BLYNK_FIRMWARE_VERSION "0.0.2" /*
+    Version: */ #define BLYNK_FIRMWARE_VERSION "0.0.4" /*
     Description:
         This is intended to run a small ESP32 based PCB that looks
         like a ghost, for simple/fun Christmas decotrations.  The
@@ -51,7 +51,8 @@
     /* LED Configurations */
     #define LED_TYPE WS2811
     #define LED_COLOR_ORDER RGB
-    #define LED_QTY 200             //TODO --> update with total QTY once the external lights are added
+    #define LED_QTY 200             //TODO --> figure out why the lights are flickering when defining the array to be the actual size of the lights (this works fine on other projects....)
+    #define LED_QTY_USED 110        //Actual QTY of lights in the strands --> USE THIS FOR LIGHT FUNCTIONS
     #define LED_RIGHT_EYE_POS 0     //Right Eye LED position in the LED array
     #define LED_LEFT_EYE_POS 1      //Left Eye LED position in the LED array
     #define LED_PER_START_POS 2     //Starting array position for the peripheral LEDs
@@ -178,7 +179,7 @@
     typedef void (*FunctionList[])();
 
     /* Update this array whenever new functions need to be added, and the led_handler will automatically loop through them */
-    FunctionList christmas_patterns = {fading_candy_cane, fading_christmas_spirit, rainbow_pattern/*, juggle_candy_cane, juggle_christmas_spirit, rotating_candy_cane, rotating_christmas_spirit*/};
+    FunctionList christmas_patterns = {fading_candy_cane, fading_christmas_spirit /*, rainbow_pattern, juggle_candy_cane, juggle_christmas_spirit, rotating_candy_cane, rotating_christmas_spirit*/};
 
     /* function list index to loop through the patterns */
     uint8_t christmas_patterns_idx = 0;
@@ -411,7 +412,7 @@ void button_right_click(Button2& btn) {
     logln("Right Hand - Click: Entering Deep Sleep..");
 
     for (uint8_t i = 0; i < 255; i++) {
-        fadeToBlackBy(LED_ARR, LED_QTY, 1);
+        fadeToBlackBy(LED_ARR, LED_QTY_USED, 1);
         /* push LED data */
         FastLED.show();
         delay(2);
@@ -498,7 +499,7 @@ void rainbow_pattern() {
     EVERY_N_MILLISECONDS(20) {global_rainbow_hue++;}
 
     /* Run the FastLED rainbow function */
-    fill_rainbow(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, global_rainbow_hue,  7);
+    fill_rainbow(LED_ARR + LED_PER_START_POS, LED_QTY_USED - LED_PER_START_POS, global_rainbow_hue,  7);
 }
 
 /* Simple function to draw a pattern, defined by an incoming array to be repeated over the full string */
@@ -531,7 +532,7 @@ uint8_t candy_cane(uint8_t starting_index/*=0*/, uint8_t fade_amount/*=0*/) {
   uint8_t pattern_index = starting_index;
 
   /* draw the pattern - skipping over the "eye" positions */
-  fill_light_pattern(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, light_pattern, qty_of_pattern, pattern_index, fade_amount);
+  fill_light_pattern(LED_ARR + LED_PER_START_POS, LED_QTY_USED - LED_PER_START_POS, light_pattern, qty_of_pattern, pattern_index, fade_amount);
 
   return qty_of_pattern;
 }
@@ -545,7 +546,7 @@ uint8_t christmas_spirit(uint8_t starting_index/*=0*/, uint8_t fade_amount/*=0*/
   uint8_t pattern_index = starting_index;
 
   /* draw the pattern - skipping over the "eye" positions */
-  fill_light_pattern(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, light_pattern, qty_of_pattern, pattern_index, fade_amount);
+  fill_light_pattern(LED_ARR + LED_PER_START_POS, LED_QTY_USED - LED_PER_START_POS, light_pattern, qty_of_pattern, pattern_index, fade_amount);
 
   return qty_of_pattern;
 }
@@ -563,32 +564,32 @@ void rotating_christmas_spirit() {
 /* Bouncing lights from end-to-end, with the colors of a candy cane */
 void juggle_candy_cane() {
   /* Fade all of the lights by 20 */
-  fadeToBlackBy(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, 20);
+  fadeToBlackBy(LED_ARR + LED_PER_START_POS, LED_QTY_USED - LED_PER_START_POS, 20);
 
   /* First light = Red */
-  LED_ARR[beatsin16( 7, LED_PER_START_POS, LED_QTY - 1 )] |= CHSV(0, 255, 255);
+  LED_ARR[beatsin16( 7, LED_PER_START_POS, LED_QTY_USED - 1 )] |= CHSV(0, 255, 255);
 
   /* Second light = Pink */
-  LED_ARR[beatsin16( 14, LED_PER_START_POS, LED_QTY - 1 )] |= CHSV(225, 201, 255);
+  LED_ARR[beatsin16( 14, LED_PER_START_POS, LED_QTY_USED - 1 )] |= CHSV(225, 201, 255);
 
   /* Third light = Offwhite */
-  LED_ARR[beatsin16( 21, LED_PER_START_POS, LED_QTY - 1 )] |= offwhite_color;
+  LED_ARR[beatsin16( 21, LED_PER_START_POS, LED_QTY_USED - 1 )] |= offwhite_color;
 
 }
 
 /* Bouncing lights from end-to-end, with the colors of a christmas spirit */
 void juggle_christmas_spirit() {
   /* Fade all of the lights by 20 */
-  fadeToBlackBy(LED_ARR + LED_PER_START_POS, LED_QTY - LED_PER_START_POS, 20);
+  fadeToBlackBy(LED_ARR + LED_PER_START_POS, LED_QTY_USED - LED_PER_START_POS, 20);
 
   /* First light = Red */
-  LED_ARR[beatsin16( 7, LED_PER_START_POS, LED_QTY - 1 )] |= CHSV(0, 255, 255);
+  LED_ARR[beatsin16( 7, LED_PER_START_POS, LED_QTY_USED - 1 )] |= CHSV(0, 255, 255);
 
   /* Second light = Offwhite */
-  LED_ARR[beatsin16( 14, LED_PER_START_POS, LED_QTY - 1 )] |= offwhite_color;
+  LED_ARR[beatsin16( 14, LED_PER_START_POS, LED_QTY_USED - 1 )] |= offwhite_color;
 
   /* Third light = Green */
-  LED_ARR[beatsin16( 21, LED_PER_START_POS, LED_QTY - 1 )] |= CHSV(80, 255, 255);
+  LED_ARR[beatsin16( 21, LED_PER_START_POS, LED_QTY_USED - 1 )] |= CHSV(80, 255, 255);
 
 }
 
