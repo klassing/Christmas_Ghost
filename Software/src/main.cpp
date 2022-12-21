@@ -2,7 +2,7 @@
 /* 
     Author: Ryan Klassing 
     Date: 11/29/22
-    Version: */ #define BLYNK_FIRMWARE_VERSION "0.0.4" /*
+    Version: */ #define BLYNK_FIRMWARE_VERSION "0.0.26" /*
     Description:
         This is intended to run a small ESP32 based PCB that looks
         like a ghost, for simple/fun Christmas decotrations.  The
@@ -15,6 +15,17 @@
         on-board "ambiance" lighting, and will be manually soldered on to the external lighting cable).
 
     License: see "LICENSE" file
+
+    12/21/2022 - Cochise Push
+    Description:
+        Added light patterns "red_and_green_curtain_lights_to_middle" and "stack_lights_in_the_middle"
+        in "Cochise.h" file.  The main.cpp code was modified to call out these light patterns in the
+        christmas_patterns function list and to add #include of the Cochise.h file just below "[END]
+        HW Configuration Setup" section.  This placement ensures that #defines used by the functions
+        have been completed before Cochise.h inclusion. Lastly, modified LED_PER_START_POS from 2 to 10
+        and added LED_PER_MID_POS 60 which marks the mid-point of the LED string offset by the start
+        position.
+
 */
 
 /* ------------ [START] Early definitions for Blynk -------------- */
@@ -55,7 +66,8 @@
     #define LED_QTY_USED 110        //Actual QTY of lights in the strands --> USE THIS FOR LIGHT FUNCTIONS
     #define LED_RIGHT_EYE_POS 0     //Right Eye LED position in the LED array
     #define LED_LEFT_EYE_POS 1      //Left Eye LED position in the LED array
-    #define LED_PER_START_POS 2     //Starting array position for the peripheral LEDs
+    #define LED_PER_START_POS 10     //Starting array position for the peripheral LEDs
+    #define LED_PER_MID_POS 60       //Midpoint of the LED string (the strings are 100 LEDs, but these are offset by the 10 LEDs on the Ghost board which pushes the middle to 60)
     #define LED_MAX_BRIGHTNESS 255   //Maximum allowed brightness for the LEDs
     #define LED_FPS 60              //# of times to push an update to the LED color/brightness per second
     #define LED_PER_FADE_AMT 20     //Fade-in / Fade-out will be done in this increment
@@ -76,6 +88,10 @@
     uint8_t led_user_setting = false;
 
 /* -------------- [END] HW Configuration Setup -------------- */
+
+ /* ------------- [START] A place to include all of the 'individual contributors' header files of functions ------------- */
+    #include <Cochise.h>
+/* ------------- [END] A place to include all of the 'individual contributors' header files of functions ------------- */
 
 /* ------------ [START] Debug compile options -------------- */
     #define LOG_DEBUG true          //true = logging printed to terminal, false = no logging
@@ -179,7 +195,7 @@
     typedef void (*FunctionList[])();
 
     /* Update this array whenever new functions need to be added, and the led_handler will automatically loop through them */
-    FunctionList christmas_patterns = {fading_candy_cane, fading_christmas_spirit /*, rainbow_pattern, juggle_candy_cane, juggle_christmas_spirit, rotating_candy_cane, rotating_christmas_spirit*/};
+    FunctionList christmas_patterns = {stack_lights_in_the_middle, red_and_green_curtain_lights_to_middle/*fading_candy_cane, fading_christmas_spirit, rainbow_pattern, juggle_candy_cane, juggle_christmas_spirit, rotating_candy_cane, rotating_christmas_spirit*/};
 
     /* function list index to loop through the patterns */
     uint8_t christmas_patterns_idx = 0;
