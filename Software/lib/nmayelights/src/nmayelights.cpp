@@ -41,60 +41,61 @@ nmayelights::nmayelights(CRGB *led_arr, uint16_t led_qty, lightTools *lightTools
 }
 
 /* "off" state for police lights */
-void pl_state0() {
-  for (int i=0; i<LED_QTY; i++) {
-    LED_ARR[i] = CRGB(0, 0, 0);
+void nmayelights::pl_state0() {
+  for (int i=0; i<_led_qty; i++) {
+    _led_arr[i] = CRGB(0, 0, 0);
   }
 }
 
 /* primary color state for police lights */
-void pl_state1(CRGB pl_color1) {
-  for (int i=0; i<LED_QTY; i++) {
+void nmayelights::pl_state1(CRGB pl_color1) {
+  for (int i=0; i<_led_qty; i++) {
     if (i<25) {
-      LED_ARR[i] = pl_color1;
+      _led_arr[i] = pl_color1;
     } else if (i<50){
-      LED_ARR[i] = CRGB(0, 0, 0);
+      _led_arr[i] = CRGB(0, 0, 0);
     } else if (i<75){
-      LED_ARR[i] = pl_color1;
+      _led_arr[i] = pl_color1;
     } else if (i<100){
-      LED_ARR[i] = CRGB(0, 0, 0);
+      _led_arr[i] = CRGB(0, 0, 0);
     } else if (i<125){
-      LED_ARR[i] = pl_color1;
+      _led_arr[i] = pl_color1;
     } else if (i<150){
-      LED_ARR[i] = CRGB(0, 0, 0);
+      _led_arr[i] = CRGB(0, 0, 0);
     } else if (i<175){
-      LED_ARR[i] = pl_color1;
+      _led_arr[i] = pl_color1;
     } else {
-      LED_ARR[i] = CRGB(0, 0, 0);
+      _led_arr[i] = CRGB(0, 0, 0);
     }
   }
 }
 
 /* secondary color state for police lights */
-void pl_state2(CRGB pl_color2) {
-  for (int i=0; i<LED_QTY; i++) {
+void nmayelights::pl_state2(CRGB pl_color2) {
+  for (int i=0; i<_led_qty; i++) {
     if (i<25) {
-      LED_ARR[i] = CRGB(0, 0, 0);
+      _led_arr[i] = CRGB(0, 0, 0);
     } else if (i<50){
-      LED_ARR[i] = pl_color2;
+      _led_arr[i] = pl_color2;
     } else if (i<75){
-      LED_ARR[i] = CRGB(0, 0, 0);
+      _led_arr[i] = CRGB(0, 0, 0);
     } else if (i<100){
-      LED_ARR[i] = pl_color2;
+      _led_arr[i] = pl_color2;
     } else if (i<125){
-      LED_ARR[i] = CRGB(0, 0, 0);
+      _led_arr[i] = CRGB(0, 0, 0);
     } else if (i<150){
-      LED_ARR[i] = pl_color2;
+      _led_arr[i] = pl_color2;
     } else if (i<175){
-      LED_ARR[i] = CRGB(0, 0, 0);
+      _led_arr[i] = CRGB(0, 0, 0);
     } else {
-      LED_ARR[i] = pl_color2;
+      _led_arr[i] = pl_color2;
     }
   }
 }
 
 /* Pulses half the lights red and half the lights blue.*/
 void nmayelights::police_lights(){
+  static uint16_t global_pl_index = 0;
   EVERY_N_MILLISECONDS( 100 ) {global_pl_index = (global_pl_index + 1) % 8;}
   switch(global_pl_index) {
     case 0:

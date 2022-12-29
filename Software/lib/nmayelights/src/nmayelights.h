@@ -31,11 +31,11 @@
     {   
         public: 
             /* Constructor of the class - pass the LED array pointer + qty of used LEDs */
-            nmayelights(CRGB *led_arr, uint16_t led_qty, lightTools *lightTools));
+            nmayelights(CRGB *led_arr, uint16_t led_qty, lightTools *lightTools);
             
             /* ADD PUBLIC USER LIGHT FUNCTIONS HERE (to be called by 'main.cpp')*/
             /* Pulses half the lights red and half the lights blue.*/
-            static void police_lights()
+            static void police_lights();
 
         private:
             /* ADD class-bound VARIABLES / FUNCTIONS HERE (to be used by this class only) */
@@ -53,12 +53,12 @@
             static uint16_t _led_midpoint;
 
             /* "off" state for police lights */
-            static void pl_state0()
+            static void pl_state0();
 
             /* primary color state for police lights */
-            static void pl_state1(CRGB pl_color1)
+            static void pl_state1(CRGB pl_color1);
             
             /* secondary color state for police lights */
-            static void pl_state2(CRGB pl_color2)
+            static void pl_state2(CRGB pl_color2);
     };
 #endif
