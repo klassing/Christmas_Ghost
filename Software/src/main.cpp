@@ -2,7 +2,7 @@
 /* 
     Author: Ryan Klassing 
     Date: 11/29/22
-    Version: */ #define BLYNK_FIRMWARE_VERSION "0.0.40" /*
+    Version: */ #define BLYNK_FIRMWARE_VERSION "0.0.43" /*
     Description:
         This is intended to run a small ESP32 based PCB that looks
         like a ghost, for simple/fun Christmas decotrations.  The
@@ -26,6 +26,11 @@
         and added LED_PER_MID_POS 60 which marks the mid-point of the LED string offset by the start
         position.
 
+
+    12/28/2022 - Nick Push
+    Description:
+        Added light pattern "police_lights".
+
 */
 
 /* ------------ [START] Early definitions for Blynk -------------- */
@@ -47,6 +52,7 @@
     #include <BlynkEdgent.h>    // Tested with v1.1.0 - https://github.com/blynkkk/blynk-library.git#1.1.0
     #include <klassyLights.h>   // Light function library by Ryan K.
     #include <cochise.h>        // Light function library by Cochise F.
+    #include <nmayelights.h>    // Light function library by Nick M.
 /* -------------- [END] Include necessary libraries -------------- */
 
 /* ------------ [START] HW Configuration Setup -------------- */
@@ -115,6 +121,7 @@
     lightTools lightTools;  //Common lightTools member, to be used by any user classes
     klassyLights klassyLights(&LED_ARR[LED_PER_START_POS], LED_STRAND_QTY, &lightTools);
     cochise cochise(&LED_ARR[LED_PER_START_POS], LED_STRAND_QTY, &lightTools);
+    nmayelights nmayelights(&LED_ARR[LED_PER_START_POS], LED_STRAND_QTY, &lightTools);
  /* ------------- [END] Construct all User Light Libraries ------------- */
 
 /* ------------ [START] Define Pattern List -------------- */
@@ -123,7 +130,8 @@
     typedef void (*FunctionList[])();
 
     /* Update this array whenever new functions need to be added, and the led_handler will automatically loop through them */
-    FunctionList christmas_patterns = {cochise.stack_lights_in_the_middle, cochise.red_and_green_curtain_lights_to_middle, klassyLights.fading_candy_cane};
+    FunctionList christmas_patterns = {cochise.stack_lights_in_the_middle, cochise.red_and_green_curtain_lights_to_middle, 
+                                       klassyLights.fading_candy_cane, nmayelights.police_lights};
 
     /* function list index to loop through the patterns */
     uint8_t christmas_patterns_idx = 0;
