@@ -21,7 +21,14 @@ This project is meant to spread the holiday cheer with a bit of lighting.
     /* Example: */  
     FunctionList christmas_patterns = {klassyLights.fading_candy_cane, ...};
     ~~~
-7. Once you're satisfied with your functions, please consider to submit a pull request to the repository so they can be added to the repo!
+7. When ready to test your code, perform the following checks:
+    - Verify the code compiles without errors or custom dependencies on your local machine (that aren't part of the tracked repo)
+    - Verify the lighting function performs as expected by using the [Online Simulator](https://wokwi.com/projects/352480708315963393)  
+        - Before uploading code to the Online Simulator, please run the script at the following location:  
+            [..\Software\tools\Create_wokwi_sim.vbs](tools)
+        - The script will pre-compile (stitch all necessary libraries into a single file) and place onto your clipboard
+        - Paste the contents into the simulator linked above, and click "run"
+8. Once you're satisfied with your functions, please consider to submit a pull request to the repository so they can be added to the repo!
     - See [Making a Pull Request](https://docs.github.com/en/get-started/quickstart/contributing-to-projects#making-a-pull-request) for assistance
 
 ## Light Function Guidelines

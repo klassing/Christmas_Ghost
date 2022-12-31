@@ -52,6 +52,10 @@ Dim TempFile						'File object: Temporary File (used for reading in content)
 'Declare array of libraries that must be found in a particular order
 Dim primary_libraries
 primary_libraries = Array("lightTools")
+Dim primary_index
+
+Dim lib_array(0)
+Dim lib_index
 
 'Define global constants
 Const ForReading = 1
@@ -95,7 +99,6 @@ Sub main()
 		Wscript.Quit
 	End If
 
-	'Loop through all primary lib\[lib_name]\src\ folders and copy all .h and .cpp contents to a concatenated string
 	Dim primary_index
 	Dim libSrcFolder
 	Dim libRootFolder
@@ -120,12 +123,10 @@ Sub main()
 
 			'Find all .cpp files in the searchFolder and add their contents to the concatenated string
 			Call AddFileContent(strTempFile, searchFolder, cpp_ext)
-
-			wscript.echo "Found primary: " + searchFolder
 		End If
 	Next 'primary_index
 
-	'Now loop through all other folders, skipping the primary_libraries folders
+	'Now loop through all other folders, skipping the primary_libraries folders (already added by above)
 	For Each objFolder in objFSO.GetFolder(lib_folder).SubFolders
 		Dim skipFolder
 		skipFolder = false
@@ -149,28 +150,7 @@ Sub main()
 
 			'Find all .cpp files in the searchFolder and add their contents to the concatenated string
 			Call AddFileContent(strTempFile, searchFolder, cpp_ext)
-
-			wscript.echo "Found normal: " + searchFolder
 		End If
-	Next 'objFolder
-
-
-	'Loop through all lib\[lib_name]\src\ folders and copy all .h and .cpp contents to a concatenated string
-	For Each objFolder in objFSO.GetFolder(lib_folder).SubFolders
-		libSrcFolder = RemoveDoubleSlash(objFolder + "\src\")
-
-		'If the src folder exists, search there.  Otherwise, search the root folder'
-		If objFSO.FolderExists(libSrcFolder) Then 
-			searchFolder = libSrcFolder
-		Else 
-			searchFolder = objFolder
-		End If
-
-		'Find all .h files in the searchFolder and add their contents to the concatenated string
-		Call AddFileContent(strTempFile, searchFolder, head_ext)
-
-		'Find all .cpp files in the searchFolder and add their contents to the concatenated string
-		Call AddFileContent(strTempFile, searchFolder, cpp_ext)
 	Next 'objFolder
 
 	'Open the main.cpp file
@@ -224,7 +204,7 @@ Sub main()
 	finished_message = "Script completed and concatenated file written to:" + vbCrLf + vbCrLf + RemoveDoubleSlash(output_folder + "\" + MainFileOutName)
 
 	If Not timeout Then
-		finished_message = finished_message + vbCrLf + vbCrLf + "Concatenated file contents were copied to the windows clipboard directly." + vbCrLf + "Direct pasting (ctrl + v) should be ready!"
+		finished_message = finished_message + vbCrLf + vbCrLf + "Concatenated file contents were copied to the windows clipboard." + vbCrLf + "Direct pasting (ctrl + v) should be ready!"
 	End If
 
 	Wscript.echo finished_message
