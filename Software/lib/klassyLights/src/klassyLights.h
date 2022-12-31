@@ -16,6 +16,10 @@
         5) The public class-function must be static
 
     Other supporting functions (not needed to be called by 'main.cpp') may not have the requirements above.
+
+    Note: there might be some uses of a #ifndef ONLINE_SIMULATION  --> these are to support a custom
+    script that will concatenate all libraries directly into the main.cpp, which allows the use of
+    online simulators to test code executions without the need of physical hardware
 */
 
 #ifndef klassyLights_h
@@ -24,7 +28,11 @@
     /* Include standard libraries needed */
     #include <Arduino.h>
     #include <FastLED.h>
-    #include <lightTools.h>
+
+    /* Include the standard light tools, unless this is the online simulation */
+    #ifndef ONLINE_SIMULATION
+        #include <lightTools.h>
+    #endif
 
     /* Class container */
     class klassyLights
@@ -54,6 +62,9 @@
             /* Red/white pattern that fades between the christmas spirit colors */
             static void fading_christmas_spirit();
 
+            /* Light starts at both ends of the string, and travels towards each other before making a big flash */
+            static void jacobs_ladder();
+
         private:
             /* Draw a simple red/white pattern to resemble a candy cane */
             /* Return the size of the pattern to a calling function, to allow upstream functions to cycle through if desired */
@@ -62,6 +73,14 @@
             /* Draw a simple red/green/white pattern to resemble christmas spirit */
             /* Return the size of the pattern to a calling function, to allow upstream functions to cycle through if desired */
             static uint8_t christmas_spirit(uint8_t starting_index=0, uint8_t fade_amount=0);
+
+            /* Reset the indeces of the class-bound travelling lights */
+            static void reset_travelling_lights();
+
+            /* Draw light that travels from each end of the string, towards the center */
+            /*  returns false while the light is travelling */
+            /*  returns true once the lights have met in the middle */
+            static uint8_t travel_light_to_mid(CRGB lead_light_color=CRGB::White, uint16_t trail_length=65535, CRGB trail_color=CRGB::Black);
 
             /* Class bound lightTools pointer */
             static lightTools *_lightTools;
@@ -76,7 +95,10 @@
             static uint16_t _led_midpoint;
 
             /* Class bound rotating light index */
-            static uint16_t rotating_light_index;
-            
+            static uint16_t _rotating_light_index;
+
+            /* Class bound traveling light indeces */
+            static uint16_t _travelling_light_start_pos;
+            static uint16_t _travelling_light_end_pos;
     };
 #endif

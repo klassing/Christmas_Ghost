@@ -5,8 +5,10 @@
 */
 
 
-/* Included header file */
-#include <lightTools.h>
+/* Included header file, unless this is the online simulation */
+#ifndef ONLINE_SIMULATION
+    #include <lightTools.h>
+#endif
 
 /* Constructor of the class */
     /* Not currently needed to initialize anything - let default constructor be called

@@ -16,10 +16,16 @@
         5) The public class-function must be static
 
     Other supporting functions (not needed to be called by 'main.cpp') may not have the requirements above.
+
+    Note: there might be some uses of a #ifndef ONLINE_SIMULATION  --> these are to support a custom
+    script that will concatenate all libraries directly into the main.cpp, which allows the use of
+    online simulators to test code executions without the need of physical hardware
 */
 
-/* Included header file */
-#include "cochise.h"
+/* Included header file, unless this is the online simulation */
+#ifndef ONLINE_SIMULATION
+    #include "cochise.h"
+#endif
 
 /* Initialize static class variables defined in the header file */
 lightTools *cochise::_lightTools = NULL;

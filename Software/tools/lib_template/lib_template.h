@@ -16,6 +16,10 @@
         5) The public class-function must be static
 
     Other supporting functions (not needed to be called by 'main.cpp') may not have the requirements above.
+
+    Note: there might be some uses of a #ifndef ONLINE_SIMULATION  --> these are to support a custom
+    script that will concatenate all libraries directly into the main.cpp, which allows the use of
+    online simulators to test code executions without the need of physical hardware
 */
 
 #ifndef [CLASS_NAME_DEFINE]
@@ -24,7 +28,11 @@
     /* Include standard libraries needed */
     #include <Arduino.h>
     #include <FastLED.h>
-    #include <lightTools.h>
+
+    /* Include the standard light tools, unless this is the online simulation */
+    #ifndef ONLINE_SIMULATION
+        #include <lightTools.h>
+    #endif
 
     /* Class container */
     class [CLASS_NAME]

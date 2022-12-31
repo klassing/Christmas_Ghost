@@ -2,7 +2,7 @@
 /* 
     Author: Ryan Klassing 
     Date: 11/29/22
-    Version: */ #define BLYNK_FIRMWARE_VERSION "0.0.40" /*
+    Version: */ #define BLYNK_FIRMWARE_VERSION "0.0.42" /*
     Description:
         This is intended to run a small ESP32 based PCB that looks
         like a ghost, for simple/fun Christmas decotrations.  The
@@ -28,41 +28,68 @@
 
 */
 
+/* ------------ [START] Custom Flag to support easier simulations -------------- */
+    /*
+        By default, this is commented out (i.e. - not defined) when running on physical HW.
+        When the user wants to run a simulation, simply uncomment the line below to optimize
+        several parts of the code that wouldn't be necessary (BT/WiFi/OTA/etc..)
+    */
+    //#define ONLINE_SIMULATION
+/* ------------   [End] Custom Flag to support easier simulations -------------- */
+
 /* ------------ [START] Early definitions for Blynk -------------- */
     #define BLYNK_TEMPLATE_ID "TMPLmXb3Shr8"
     #define BLYNK_DEVICE_NAME "ChristmasGhost"
     #define BLYNK_PRINT Serial
 /* ------------   [End] Early definitions for Blynk -------------- */
 
+/* ------------ [START] prepended libraries (for online simulation) -------------- */
+    /* Note: this section will be blank for physical HW development */
+    //[INSERT_PRE-COMPILE_HERE]
+/* ------------   [End] prepended libraries (for online simulation) -------------- */
+
 
 /* ------------ [START] Include necessary libraries -------------- */
     #include <FastLED.h>        // Tested with v3.5.0 - https://github.com/FastLED/FastLED.git#3.5.0
-    #include <WiFi.h>           // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
-    #include <esp_bt.h>         // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
-    #include <WiFiAP.h>         // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
-    #include <WebServer.h>      // Included in ESP32 ARduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
-    #include <EEPROM.h>         // Included in ESP32 ARduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
-    #include <ESP2SOTA.h>       // Tested with v1.0.2 - https://github.com/pangodream/ESP2SOTA.git#1.0.2
     #include <Button2.h>        // Tested with v2.0.3 - https://github.com/LennartHennigs/Button2.git#2.0.3
-    #include <BlynkEdgent.h>    // Tested with v1.1.0 - https://github.com/blynkkk/blynk-library.git#1.1.0
-    #include <klassyLights.h>   // Light function library by Ryan K.
-    #include <cochise.h>        // Light function library by Cochise F.
+    #ifndef ONLINE_SIMULATION   // Only include these when running on physical HW
+        #include <esp_bt.h>         // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
+        #include <BlynkEdgent.h>    // Tested with v1.1.0 - https://github.com/blynkkk/blynk-library.git#1.1.0
+        #include <klassyLights.h>   // Light function library by Ryan K.
+        #include <cochise.h>        // Light function library by Cochise F.
+    #endif
 /* -------------- [END] Include necessary libraries -------------- */
 
 /* ------------ [START] HW Configuration Setup -------------- */
     /* Pin Configurations */
     #define LED_PWR_EN_PIN 25
-    #define LED_DATA_PIN 26
-    #define LEFT_TOUCH_PIN 15
-    #define RIGHT_TOUCH_PIN 14
+    #ifndef ONLINE_SIMULATION       //pins for physical HW (ESP32)
+        #define LED_DATA_PIN 26
+        #define LEFT_TOUCH_PIN 15
+        #define RIGHT_TOUCH_PIN 14
+    #else                           //pins for online simulation (AVR)
+        #define LED_DATA_PIN 5
+        #define LEFT_TOUCH_PIN 12
+        #define RIGHT_TOUCH_PIN 13
+    #endif
+
 
     /* LED Configurations */
-    #define LED_TYPE WS2811
-    #define LED_COLOR_ORDER RGB
-    #define LED_ARR_QTY 200         //TODO --> figure out why the lights are flickering when defining the array to be the actual size of the lights (this works fine on other projects....)
-    #define LED_STRAND_QTY 100      //Actual QTY of lights in the strands --> USE THIS FOR LIGHT FUNCTIONS
-    #define LED_PER_START_POS 10    //Starting array position for the peripheral LEDs
-    #define LED_MAX_BRIGHTNESS 255  //Maximum allowed brightness for the LEDs
+    #ifndef ONLINE_SIMULATION           //If running on the physical HW (ESP32)
+        #define LED_TYPE WS2811
+        #define LED_COLOR_ORDER RGB
+        #define LED_ARR_QTY 200         //TODO --> figure out why the lights are flickering when defining the array to be the actual size of the lights (this works fine on other projects....)
+        #define LED_STRAND_QTY 100      //Actual QTY of lights in the strands --> USE THIS FOR LIGHT FUNCTIONS
+        #define LED_PER_START_POS 10    //Starting array position for the peripheral LEDs
+        #define LED_MAX_BRIGHTNESS 255  //Maximum allowed brightness for the LEDs
+    #else                               //If running on virtual arduino simulation (AVR)
+        #define LED_TYPE WS2811
+        #define LED_COLOR_ORDER RGB
+        #define LED_ARR_QTY 100         //TODO --> figure out why the lights are flickering when defining the array to be the actual size of the lights (this works fine on other projects....)
+        #define LED_STRAND_QTY 100      //Actual QTY of lights in the strands --> USE THIS FOR LIGHT FUNCTIONS
+        #define LED_PER_START_POS 0     //Starting array position for the peripheral LEDs
+        #define LED_MAX_BRIGHTNESS 255  //Maximum allowed brightness for the LEDs
+    #endif
     CRGB LED_ARR[LED_ARR_QTY];      //global LED array
 
 /* -------------- [END] HW Configuration Setup -------------- */
@@ -123,7 +150,7 @@
     typedef void (*FunctionList[])();
 
     /* Update this array whenever new functions need to be added, and the led_handler will automatically loop through them */
-    FunctionList christmas_patterns = {cochise.stack_lights_in_the_middle, cochise.red_and_green_curtain_lights_to_middle, klassyLights.fading_candy_cane};
+    FunctionList christmas_patterns = {klassyLights.jacobs_ladder, cochise.stack_lights_in_the_middle, cochise.red_and_green_curtain_lights_to_middle, klassyLights.fading_candy_cane};
 
     /* function list index to loop through the patterns */
     uint8_t christmas_patterns_idx = 0;
@@ -141,7 +168,9 @@ void setup() {
     Serial.begin(SERIAL_BAUD);
 
     /* Set WiFi to automatic sleep to reduce power */
-    WiFi.setSleep(true);
+    #ifndef ONLINE_SIMULATION
+        WiFi.setSleep(true);
+    #endif
 
     /* Disable BT to reduce power */
     disableBT();
@@ -153,12 +182,20 @@ void setup() {
     /* Print Welcome Message */
     print_welcome_message();
 
-    /* Create LED array / Set master brightness */
-    FastLED.addLeds<LED_TYPE, LED_DATA_PIN, LED_COLOR_ORDER>(LED_ARR, LED_ARR_QTY).setCorrection(TypicalLEDStrip);
-    FastLED.setBrightness(LED_MAX_BRIGHTNESS);
+    /* Finish initialization depending on physical HW vs Virtual Simulation */
+    #ifndef ONLINE_SIMULATION       //If running on physical HW
+        FastLED.addLeds<LED_TYPE, LED_DATA_PIN, LED_COLOR_ORDER>(LED_ARR, LED_ARR_QTY).setCorrection(TypicalLEDStrip);
+        FastLED.setBrightness(LED_MAX_BRIGHTNESS);
 
-    /* Initiate Blynk Edgent */
-    BlynkEdgent.begin();
+        /* Initiate Blynk Edgent */
+        BlynkEdgent.begin();
+    #else                           //If running online simulation
+        FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(LED_ARR, LED_ARR_QTY).setCorrection(TypicalLEDStrip);
+        FastLED.setBrightness(LED_MAX_BRIGHTNESS);
+    #endif
+
+    /* Create LED array / Set master brightness */
+
 }
 
 void loop() {
@@ -169,7 +206,9 @@ void loop() {
     button_handler();
 
     /* Handle BlynkEdgent */
-    BlynkEdgent.run();
+    #ifndef ONLINE_SIMULATION
+        BlynkEdgent.run();
+    #endif
 
     /* Delay a small amount to pet the watchdog */
     delayMicroseconds(1);
@@ -194,13 +233,17 @@ void print_welcome_message() {
 
 /* Function to disable WiFi for power savings */
 void disableWiFi() {
-    WiFi.disconnect(true);
-    WiFi.mode(WIFI_OFF);
+    #ifndef ONLINE_SIMULATION
+        WiFi.disconnect(true);
+        WiFi.mode(WIFI_OFF);
+    #endif
 }
 
 /* Function to disable BT for power savings */
 void disableBT() {
-    btStop();
+    #ifndef ONLINE_SIMULATION
+        btStop();
+    #endif
 }
 
 /* Handler function to execute various LED management tasks */
@@ -227,8 +270,23 @@ void button_handler() {
     left_hand_btn.loop();
     right_hand_btn.loop();
 
-    /* Temporary work around since the button callbacks aren't working properly */
-    if (left_hand_btn.isPressed() || right_hand_btn.isPressed()) {EVERY_N_SECONDS(2) {next_pattern();}}
+    #ifndef ONLINE_SIMULATION   //running on real HW
+        /* Temporary work around since the button callbacks aren't working properly */
+        if (left_hand_btn.isPressed() || right_hand_btn.isPressed()) {EVERY_N_SECONDS(2) {next_pattern();}}
+    #else
+        /* Online simulation has the Button2 library, but it doesn't seem to work - another temporary workaround */
+        static uint8_t run_once = false;
+
+        if (!run_once) {
+            pinMode(LEFT_TOUCH_PIN, INPUT);
+            pinMode(RIGHT_TOUCH_PIN, INPUT);
+            run_once = true;
+        }
+
+        if (digitalRead(LEFT_TOUCH_PIN) || digitalRead(RIGHT_TOUCH_PIN)) {EVERY_N_SECONDS(2) {next_pattern();}}
+    #endif
+
+
 }
 
 /* Function to initialize the button configurations */

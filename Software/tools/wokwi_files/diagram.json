@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "author": "Ryan Klassing",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 1219.76, "left": -24.56, "attrs": {} },
+    {
+      "type": "wokwi-neopixel-canvas",
+      "id": "neopixels1",
+      "top": 1124.87,
+      "left": -60.69,
+      "attrs": { "rows": "1", "cols": "30", "matrixBrightness": "10" }
+    },
+    {
+      "type": "wokwi-neopixel-canvas",
+      "id": "neopixels4",
+      "top": 503.54,
+      "left": 628.89,
+      "attrs": { "rows": "1", "cols": "16", "matrixBrightness": "10" }
+    },
+    {
+      "type": "wokwi-neopixel-canvas",
+      "id": "neopixels2",
+      "top": 1423.55,
+      "left": -382.55,
+      "rotate": 270,
+      "attrs": { "rows": "1", "cols": "27", "matrixBrightness": "10" }
+    },
+    {
+      "type": "wokwi-neopixel-canvas",
+      "id": "neopixels3",
+      "top": 825.75,
+      "left": 329.67,
+      "rotate": 270,
+      "attrs": { "rows": "1", "cols": "27", "matrixBrightness": "10" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 1161.82,
+      "left": 104.6,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 1165,
+      "left": 17.1,
+      "attrs": { "value": "1000" }
+    }
+  ],
+  "connections": [
+    [ "neopixels2:VSS", "neopixels1:VSS", "black", [ "h0" ] ],
+    [ "neopixels3:VSS", "neopixels2:VSS", "black", [ "h74.42", "v395.48" ] ],
+    [ "neopixels4:VSS", "neopixels2:VSS", "black", [ "v0" ] ],
+    [ "neopixels2:VDD", "neopixels1:VDD", "red", [ "h0" ] ],
+    [ "neopixels2:VDD", "neopixels3:VDD", "red", [ "h783.74", "v-528.29" ] ],
+    [ "neopixels2:VDD", "neopixels4:VDD", "red", [ "h0" ] ],
+    [ "neopixels2:DOUT", "neopixels1:DIN", "green", [ "h0" ] ],
+    [ "neopixels1:DOUT", "neopixels3:DIN", "green", [ "v281.07", "h458.59", "v-249" ] ],
+    [ "neopixels3:DOUT", "neopixels4:DIN", "green", [ "h0" ] ],
+    [ "uno:5V", "neopixels2:VDD", "red", [ "v0" ] ],
+    [ "uno:GND.2", "neopixels2:VSS", "black", [ "v0" ] ],
+    [ "uno:5", "neopixels2:DIN", "green", [ "v-74.69", "h-221.2", "v274.79" ] ],
+    [ "btn1:2.r", "uno:5V", "red", [ "h4.02", "v17.84", "h-40.18" ] ],
+    [ "uno:13", "btn1:1.l", "green", [ "v0" ] ],
+    [ "r1:2", "btn1:1.l", "green", [ "v0" ] ],
+    [ "uno:12", "uno:13", "green", [ "v0" ] ],
+    [ "r1:1", "neopixels2:VSS", "black", [ "h-47.93", "v258.86" ] ]
+  ],
+  "dependencies": {}
+}
