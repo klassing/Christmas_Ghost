@@ -10,7 +10,7 @@
     To allow the 'main.cpp' file to call function prototypes from an array, the following
     standards must be applied to each light function desired to be called externally:
         1) The function must defined within the class below (to prevent naming conflicts with other users)
-        2) The public class-function must be public
+        2) The class-function must be public
         3) The public class-function must be of the type 'void' (i.e. - it must not return any value)
         4) The public class-function must not take any parameters as an input
         5) The public class-function must be static
