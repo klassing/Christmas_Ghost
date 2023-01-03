@@ -158,7 +158,7 @@
     typedef void (*FunctionList[])();
 
     /* Update this array whenever new functions need to be added, and the led_handler will automatically loop through them */
-    FunctionList christmas_patterns = {klassyLights.jacobs_ladder, cochise.stack_lights_in_the_middle, cochise.red_and_green_curtain_lights_to_middle, klassyLights.fading_candy_cane, nmayelights.police_lights};
+    FunctionList christmas_patterns = {klassyLights.physics_demo, cochise.stack_lights_in_the_middle, cochise.red_and_green_curtain_lights_to_middle, klassyLights.fading_candy_cane, nmayelights.police_lights};
 
     /* function list index to loop through the patterns */
     uint8_t christmas_patterns_idx = 0;

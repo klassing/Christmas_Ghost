@@ -159,6 +159,58 @@ void klassyLights::jacobs_ladder() {
   }
 }
 
+/* demo for light physics*/
+void klassyLights::physics_demo() {
+  static uint8_t runOnce = true;
+  static movingLight light0;
+  static movingLight light1;
+  static movingLight light2;
+
+  /* Setup initial light instances */
+  if (runOnce) {
+    light0.start(0, 16000, -16000);
+    //light1.start(25, 1000, -30000);
+    //light2.start(90, -1000, -1000);
+
+    runOnce = false;
+  }
+
+  /* Move each light */
+  light0.move();
+  //light1.move();
+  //light2.move();
+
+  /* Clear the led array */
+  FastLED.clear();
+
+  /* grab each direction */
+  int8_t light0dir = (int8_t)constrain(light0.v, -1, 1);
+  //int8_t light1dir = (int8_t)constrain(light1.v, -1, 1);
+  //int8_t light2dir = (int8_t)constrain(light2.v, -1, 1);
+
+  /* grab each primary position */
+  uint8_t light0pos = (uint16_t)constrain(light0.r, 0, _led_qty);
+  //uint8_t light1pos = (uint16_t)constrain(light1.r, 0, _led_qty);
+  //uint8_t light2pos = (uint16_t)constrain(light2.r, 0, _led_qty);
+
+  /* grab secondary position */
+  uint8_t light0prevpos = constrain(light0pos + light0dir, 0, _led_qty);
+
+  /* calculate the fade amount */
+  uint8_t light0fade = (uint8_t) constrain((255 * (light0.r - light0pos)), 0, 255);
+  uint8_t light0prevfade = 255 - light0fade;
+
+  /* Draw each moving light*/
+  _led_arr[light0pos] = CRGB::Red;     //Need to constrain and recast position, since it's a float
+  _led_arr[light0prevpos] =  _led_arr[light0pos];
+  //_led_arr[(uint16_t)constrain(light1.r, 0, _led_qty)] = CRGB::White;   //Need to constrain and recast position, since it's a float
+  //_led_arr[(uint16_t)constrain(light2.r, 0, _led_qty)] = CRGB::Blue;    //Need to constrain and recast position, since it's a float
+
+  /* Do the fading */
+  _led_arr[light0pos] = _lightTools->fadeToColor(_led_arr[light0pos], CRGB::Black, light0fade);
+  _led_arr[light0prevpos] = _lightTools->fadeToColor(_led_arr[light0pos], CRGB::Black, light0prevfade);
+}
+
 /* Reset the indeces of the class-bound travelling lights */
 void klassyLights::reset_travelling_lights() {
   _travelling_light_start_pos = 0;

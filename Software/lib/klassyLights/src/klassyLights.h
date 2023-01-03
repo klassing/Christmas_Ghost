@@ -65,6 +65,8 @@
             /* Light starts at both ends of the string, and travels towards each other before making a big flash */
             static void jacobs_ladder();
 
+            /* demo for light physics*/
+            static void physics_demo();
         private:
             /* Draw a simple red/white pattern to resemble a candy cane */
             /* Return the size of the pattern to a calling function, to allow upstream functions to cycle through if desired */
