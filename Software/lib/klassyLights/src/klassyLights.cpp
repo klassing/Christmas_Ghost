@@ -237,8 +237,8 @@ void klassyLights::physics_demo() {
 
     Serial.println("beat16 100x = " + String(end_time - start_time,DEC) + "us");
 
-    light0.start(0, 60, 1);
-    light1.start(10, 60, 1);    
+    light0.start(0, 6000, 100);
+    light1.start(10, 6000, 100);    
 
     Serial.println("initial rTimer = " + String(light1.rTimer,DEC));
 
