@@ -43,7 +43,7 @@
         //Function to move a light (updating position and velocity)
         //  Note: artificially limit calculations to once per ms, as this will save
         //      CPU cycles with minimal impact on the animation fluidity
-        void move() {EVERY_N_MILLIS( 1 ) {setR(); setV(); t=millis();}};
+        void move() {setR(); setV(); t=millis();};
 
         //Function to return the fractional portion of the position, scaled as an 8-bit unsigned int
         uint8_t getRscale8() {return (uint8_t)(255 * (r - (uint32_t)r));};
@@ -65,7 +65,7 @@
 
         Currently, there are some issues with the timer based approach resulting
         in 'jerky' movement.  The intent of the timers is to reduce the computation
-        overhead for cycles where teh position wouldn't move anyway.  Until this
+        overhead for cycles where the position wouldn't move anyway.  Until this
         is fixed, I DONT RECOMMEND USING --> USE THE FLOAT STRUCTURE ABOVE.
     */
 

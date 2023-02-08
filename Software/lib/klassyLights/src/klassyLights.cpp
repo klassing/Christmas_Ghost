@@ -165,92 +165,32 @@ void klassyLights::physics_demo() {
   /* Setup initial light instances */
   static uint8_t RunOnce = true;
   static f_movingLight_t light0;
-  static int_movingLight_t light1;
-  static uint16_t position = 0;
-
-  uint32_t start_time = 0;
-  uint32_t end_time = 0;
-
-  uint32_t timebase = millis();
+  static f_movingLight_t light1;
+  static f_movingLight_t light2;
+  static f_movingLight_t light3;
+  //static int_movingLight_t intlight1;
 
   if (RunOnce) {
-    light0.start(0, 100, 10);
-    light1.start(0, 100, 10);
-
-    start_time = micros();
-    for(uint8_t i = 0; i < 1; i++) {
-      light0.move();
-    }
-    end_time = micros();
-
-    delay(10);
-
-    Serial.println("float light move() 1x = " + String(end_time - start_time,DEC) + "us");
-
-    start_time = micros();
-    for(uint8_t i = 0; i < 100; i++) {
-      light0.move();
-    }
-    end_time = micros();
-
-    delay(10);
-
-    Serial.println("float light move() 100x = " + String(end_time - start_time,DEC) + "us");
-
-    start_time = micros();
-    for(uint8_t i = 0; i < 1; i++) {
-      light1.move();
-    }
-    end_time = micros();
-
-    delay(10);
-
-    Serial.println("int light move() 1x = " + String(end_time - start_time,DEC) + "us");
-
-    start_time = micros();
-    for(uint8_t i = 0; i < 100; i++) {
-      light1.move();
-    }
-    end_time = micros();
-
-    delay(10);
-
-    Serial.println("int light move() 100x = " + String(end_time - start_time,DEC) + "us");
-
-    start_time = micros();
-    for(uint8_t i = 0; i < 1; i++) {
-      position += beat16(100, timebase);
-    }
-    end_time = micros();
-
-    delay(10);
-
-    Serial.println("beat16 1x = " + String(end_time - start_time,DEC) + "us");
-
-    start_time = micros();
-    for(uint8_t i = 0; i < 100; i++) {
-      position += beat16(100, timebase);
-    }
-    end_time = micros();
-
-    delay(10);
-
-    Serial.println("beat16 100x = " + String(end_time - start_time,DEC) + "us");
-
-    light0.start(0, 6000, 100);
-    light1.start(10, 6000, 100);    
-
-    Serial.println("initial rTimer = " + String(light1.rTimer,DEC));
+    light0.start(0, 300, 50);
+    light1.start(50, 1000, -50);
+    light2.start(25, 600, -100);
+    light3.start(75, -1000, 10);
+    //intlight1.start(0, 100, 100);   
 
     RunOnce = false;
   }
-
   FastLED.clear();
   light0.move();
   light1.move();
+  light2.move();
+  light3.move();
+  //intlight1.move();
 
-  _led_arr[constrain((uint16_t)light0.r, 0, _led_qty - 1)] = CRGB::Red;
-  _led_arr[constrain(light1.getR(), 0, _led_qty - 1)] = CRGB::Blue;
+  _led_arr[constrain((uint16_t)light0.r, 0, _led_qty - 1)] += CRGB::Red;
+  _led_arr[constrain((uint16_t)light1.r, 0, _led_qty - 1)] += CRGB::Blue;
+  _led_arr[constrain((uint16_t)light2.r, 0, _led_qty - 1)] += CRGB::Green;
+  _led_arr[constrain((uint16_t)light3.r, 0, _led_qty - 1)] += CRGB::Purple;
+  //_led_arr[constrain(intlight1.getR(), 0, _led_qty - 1)] = CRGB::Blue;
 
 }
 
