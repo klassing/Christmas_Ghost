@@ -43,8 +43,11 @@
 /* ------------   [End] Custom Flag to support easier simulations -------------- */
 
 /* ------------ [START] Early definitions for Blynk -------------- */
-    #define BLYNK_TEMPLATE_ID "TMPLmXb3Shr8"
+    // OLD INFO for 2022 #define BLYNK_TEMPLATE_ID "TMPLmXb3Shr8"
+    #define BLYNK_TEMPLATE_ID "TMPL2jCU_je2j"
+    #define BLYNK_TEMPLATE_NAME "ESP32 WiFi Project"
     #define BLYNK_DEVICE_NAME "ChristmasGhost"
+    //#define BLYNK_AUTH_TOKEN "utlNLbeY_iekzKw9PZKoW0bTrAr2XUrD"
     #define BLYNK_PRINT Serial
 /* ------------   [End] Early definitions for Blynk -------------- */
 
@@ -59,7 +62,7 @@
     #include <Button2.h>        // Tested with v2.0.3 - https://github.com/LennartHennigs/Button2.git#2.0.3
     #ifndef ONLINE_SIMULATION   // Only include these when running on physical HW
         #include <esp_bt.h>         // Included in ESP32 Arduino Core - Tested with v2.0.5 - https://github.com/platformio/platform-espressif32.git#v5.2.0
-        #include <BlynkEdgent.h>    // Tested with v1.1.0 - https://github.com/blynkkk/blynk-library.git#1.1.0
+        #include <BlynkEdgent.h>    // Tested with v1.3.2 - https://github.com/blynkkk/blynk-library.git#1.3.2
         #include <klassyLights.h>   // Light function library by Ryan K.
         #include <cochise.h>        // Light function library by Cochise F.
         #include <nmayelights.h>    // Light function library by Nick M.
